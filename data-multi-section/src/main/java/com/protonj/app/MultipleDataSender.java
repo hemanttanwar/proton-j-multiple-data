@@ -9,14 +9,19 @@ import org.apache.qpid.proton.message.Message;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+/**
+ * Trying to understand how we can send multiple data section in one amqp message using proton-j library.
+ *
+ * Following suggestion from : https://issues.apache.org/jira/browse/PROTON-1098
+ */
 public class MultipleDataSender {
     final int MAX_SIZE_BYTES = 1024;
     final int HEADER_SIZE_BYTES = 10;
 
-    Sender sender; // In real applicsation this will be initialised.
+    Sender sender; // In real application this will be initialised.
 
     public void send( ) {
-        // Lets assume we want to add two
+        // Lets assume we want to add two data sections.
         final int totalAdditionalSectionToSend = 2;
 
         final byte[] bytes = new byte[MAX_SIZE_BYTES];
@@ -38,7 +43,7 @@ public class MultipleDataSender {
         //2.  Now append above created bytes with additional Section to send in this amqp message.
         for (int i = 0; i < totalAdditionalSectionToSend; ++i) {
 
-            // create codec Data with just  bytes.
+            // create codec Data with just bytes as body.
             org.apache.qpid.proton.codec.Data messageWrappedByData = DataImpl.Factory.create();
 
             messageWrappedByData.putDescribedType(new AmqpDataDescribedType(new Binary((" additional section -" + (i + 2))
@@ -57,6 +62,7 @@ public class MultipleDataSender {
             byteArrayOffset = byteArrayOffset + additionalSectionEncodedSize;
         } //for
 
+        // send one amqp message with multiple data sections.
         sender.send(bytes, 0, byteArrayOffset);
 
     }
